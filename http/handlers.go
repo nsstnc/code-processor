@@ -10,9 +10,15 @@ import (
 
 // новая задача
 func createTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	taskID := storage.TaskManagerInstance.AddTask()
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]string{"id": taskID})
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(map[string]string{"task_id": taskID})
 }
 
 // статус задачи

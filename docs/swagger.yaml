@@ -1,0 +1,99 @@
+definitions:
+  storage.Task:
+    description: Данные задачи
+    properties:
+      id:
+        type: string
+      result:
+        type: string
+      status:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /result/{task_id}:
+    get:
+      description: Получает результат задачи по ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получение результата задачи
+      tags:
+      - tasks
+  /status/{task_id}:
+    get:
+      description: Получает статус задачи по ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получение статуса задачи
+      tags:
+      - tasks
+  /task:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новую задачу
+      parameters:
+      - description: Task Info
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/storage.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создание задачи
+      tags:
+      - tasks
+swagger: "2.0"

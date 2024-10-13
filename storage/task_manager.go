@@ -1,6 +1,7 @@
 package storage
 
 import (
+	_ "code-processor/docs"
 	"math/rand"
 	"sync"
 	"time"
@@ -8,7 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// Информация о задаче
+// Task структура для задачи
+// @Description Данные задачи
 type Task struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`

@@ -4,6 +4,7 @@ import (
 	_ "code-processor/docs"
 	"code-processor/storage"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -69,4 +70,81 @@ func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(map[string]string{"result": result})
+}
+
+type UserRequest struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
+func registerUserHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var req UserRequest
+	err = json.Unmarshal(body, &req)
+	if err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	if req.Login == "" || req.Password == "" {
+		http.Error(w, "Login and password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	userID := storage.UserManagerInstance.AddUser(req.Login, req.Password)
+
+	if len(userID) != 0 {
+		response := map[string]string{
+			"user_id": userID,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	} else {
+		http.Error(w, "Cannot register user", http.StatusBadRequest)
+		return
+	}
+
+}
+
+func loginUserHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var req UserRequest
+	err = json.Unmarshal(body, &req)
+	if err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	if req.Login == "" || req.Password == "" {
+		http.Error(w, "Login and password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	userID := storage.UserManagerInstance.ValidateUser(req.Login, req.Password)
+
+	if len(userID) != 0 {
+		response := map[string]string{
+			"user_id": userID,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	} else {
+		http.Error(w, "Cannot register user", http.StatusBadRequest)
+		return
+	}
+
 }

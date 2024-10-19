@@ -14,5 +14,7 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/task", createTaskHandler).Methods("POST")
 	r.HandleFunc("/status/{task_id}", getTaskStatusHandler).Methods("GET")
 	r.HandleFunc("/result/{task_id}", getTaskResultHandler).Methods("GET")
+	r.HandleFunc("/register", registerUserHandler).Methods("POST")
+	r.HandleFunc("/login", loginUserHandler).Methods("POST")
 	return r
 }

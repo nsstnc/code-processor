@@ -1,4 +1,11 @@
 definitions:
+  http.UserRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
   storage.Task:
     description: Данные задачи
     properties:
@@ -12,6 +19,66 @@ definitions:
 info:
   contact: {}
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: делает авторизацию пользователя и возвращает его ID
+      parameters:
+      - description: Данные для логина пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/http.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user_id
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: логин пользователя
+      tags:
+      - users
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует нового пользователя и возвращает его ID
+      parameters:
+      - description: Данные для регистрации пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/http.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user_id
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация пользователя
+      tags:
+      - users
   /result/{task_id}:
     get:
       description: Получает результат задачи по ID

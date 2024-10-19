@@ -77,6 +77,16 @@ type UserRequest struct {
 	Password string `json:"password"`
 }
 
+// registerUserHandler регистрирует пользователя.
+// @Summary Регистрация пользователя
+// @Description Регистрирует нового пользователя и возвращает его ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body UserRequest true "Данные для регистрации пользователя"
+// @Success 200 {object} map[string]string "user_id"
+// @Failure 400 {object} map[string]string "error"
+// @Router /register [post]
 func registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -113,6 +123,16 @@ func registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// loginUserHandler логин пользователя.
+// @Summary логин пользователя
+// @Description делает авторизацию пользователя и возвращает его ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body UserRequest true "Данные для логина пользователя"
+// @Success 200 {object} map[string]string "user_id"
+// @Failure 400 {object} map[string]string "error"
+// @Router /login [post]
 func loginUserHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -143,7 +163,7 @@ func loginUserHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 	} else {
-		http.Error(w, "Cannot register user", http.StatusBadRequest)
+		http.Error(w, "Cannot find user", http.StatusBadRequest)
 		return
 	}
 

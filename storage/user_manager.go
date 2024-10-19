@@ -33,6 +33,17 @@ func NewUserManager() *UserManager {
 
 // AddUser добавляет нового пользователя
 func (um *UserManager) AddUser(login string, password string) string {
+	um.Lock()
+	defer um.Unlock()
+
+	// Проверяем, существует ли пользователь с таким логином
+	for _, user := range um.users {
+		if user.Login == login {
+			log.Printf("User with login '%s' already exists\n", login)
+			return ""
+		}
+	}
+
 	userID := uuid.New().String()
 
 	// Хэширование пароля

@@ -12,13 +12,16 @@ import (
 
 // createTaskHandler создаёт новую задачу.
 // @Summary Создание задачи
-// @Description Создаёт новую задачу
+// @Description Создаёт новую задачу. Требуется токен аутентификации.
 // @Tags tasks
+// @Security BearerAuth
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer {auth_token}"
 // @Param task body storage.Task true "Task Info"
 // @Success 201 {object} map[string]string
 // @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
 // @Router /task [post]
 func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -34,12 +37,15 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 // getTaskStatusHandler возвращает статус задачи по её ID.
 // @Summary Получение статуса задачи
-// @Description Получает статус задачи по ID
+// @Description Получает статус задачи по ID. Требуется токен аутентификации.
 // @Tags tasks
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer {auth_token}"
 // @Param task_id path string true "Task ID"
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Failure 404 {object} map[string]string
+// @Failure 401 {object} map[string]string
 // @Router /status/{task_id} [get]
 func getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -54,12 +60,15 @@ func getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 // getTaskResultHandler возвращает результат задачи по её ID.
 // @Summary Получение результата задачи
-// @Description Получает результат задачи по ID
+// @Description Получает результат задачи по ID. Требуется токен аутентификации.
 // @Tags tasks
+// @Security BearerAuth
+// @Param Authorization header string true "Bearer {auth_token}"
 // @Param task_id path string true "Task ID"
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Failure 404 {object} map[string]string
+// @Failure 401 {object} map[string]string
 // @Router /result/{task_id} [get]]
 func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -88,6 +97,7 @@ type UserRequest struct {
 // @Failure 400 {object} map[string]string "error"
 // @Router /register [post]
 func registerUserHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request body", http.StatusBadRequest)
@@ -109,23 +119,21 @@ func registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID := storage.UserManagerInstance.AddUser(req.Login, req.Password)
 
-	if len(userID) != 0 {
-		response := map[string]string{
-			"user_id": userID,
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	} else {
+	if userID == "" {
 		http.Error(w, "Cannot register user", http.StatusBadRequest)
 		return
 	}
+	response := map[string]string{
+		"user_id": userID,
+	}
+
+	json.NewEncoder(w).Encode(response)
 
 }
 
 // loginUserHandler логин пользователя.
 // @Summary логин пользователя
-// @Description делает авторизацию пользователя и возвращает его ID
+// @Description делает авторизацию пользователя и возвращает
 // @Tags users
 // @Accept json
 // @Produce json
@@ -153,18 +161,16 @@ func loginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := storage.UserManagerInstance.ValidateUser(req.Login, req.Password)
-
-	if len(userID) != 0 {
-		response := map[string]string{
-			"user_id": userID,
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	} else {
-		http.Error(w, "Cannot find user", http.StatusBadRequest)
+	authToken := storage.UserManagerInstance.ValidateUser(req.Login, req.Password)
+	if authToken == "" {
+		http.Error(w, "Invalid login or password", http.StatusUnauthorized)
 		return
 	}
+
+	response := map[string]string{
+		"auth_token": authToken,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 
 }

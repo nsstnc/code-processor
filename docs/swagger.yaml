@@ -23,7 +23,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: делает авторизацию пользователя и возвращает его ID
+      description: делает авторизацию пользователя и возвращает
       parameters:
       - description: Данные для логина пользователя
         in: body
@@ -81,8 +81,13 @@ paths:
       - users
   /result/{task_id}:
     get:
-      description: Получает результат задачи по ID
+      description: Получает результат задачи по ID. Требуется токен аутентификации.
       parameters:
+      - description: Bearer {auth_token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Task ID
         in: path
         name: task_id
@@ -97,19 +102,32 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Получение результата задачи
       tags:
       - tasks
   /status/{task_id}:
     get:
-      description: Получает статус задачи по ID
+      description: Получает статус задачи по ID. Требуется токен аутентификации.
       parameters:
+      - description: Bearer {auth_token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Task ID
         in: path
         name: task_id
@@ -124,12 +142,20 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Получение статуса задачи
       tags:
       - tasks
@@ -137,8 +163,13 @@ paths:
     post:
       consumes:
       - application/json
-      description: Создаёт новую задачу
+      description: Создаёт новую задачу. Требуется токен аутентификации.
       parameters:
+      - description: Bearer {auth_token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Task Info
         in: body
         name: task
@@ -160,6 +191,14 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Создание задачи
       tags:
       - tasks

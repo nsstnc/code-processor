@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "post": {
-                "description": "делает авторизацию пользователя и возвращает его ID",
+                "description": "делает авторизацию пользователя и возвращает",
                 "consumes": [
                     "application/json"
                 ],
@@ -109,7 +109,12 @@ const docTemplate = `{
         },
         "/result/{task_id}": {
             "get": {
-                "description": "Получает результат задачи по ID",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получает результат задачи по ID. Требуется токен аутентификации.",
                 "produces": [
                     "application/json"
                 ],
@@ -118,6 +123,13 @@ const docTemplate = `{
                 ],
                 "summary": "Получение результата задачи",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer {auth_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Task ID",
@@ -129,6 +141,15 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -150,7 +171,12 @@ const docTemplate = `{
         },
         "/status/{task_id}": {
             "get": {
-                "description": "Получает статус задачи по ID",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получает статус задачи по ID. Требуется токен аутентификации.",
                 "produces": [
                     "application/json"
                 ],
@@ -159,6 +185,13 @@ const docTemplate = `{
                 ],
                 "summary": "Получение статуса задачи",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer {auth_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Task ID",
@@ -170,6 +203,15 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -191,7 +233,12 @@ const docTemplate = `{
         },
         "/task": {
             "post": {
-                "description": "Создаёт новую задачу",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Создаёт новую задачу. Требуется токен аутентификации.",
                 "consumes": [
                     "application/json"
                 ],
@@ -203,6 +250,13 @@ const docTemplate = `{
                 ],
                 "summary": "Создание задачи",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer {auth_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Task Info",
                         "name": "task",
@@ -225,6 +279,15 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

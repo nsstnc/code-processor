@@ -4,6 +4,7 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get install -y \
     clang \
     gcc \
+    g++ \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 

@@ -2,9 +2,8 @@ package storage
 
 import (
 	_ "code-processor/docs"
-	"math/rand"
+	rabbitmq "code-processor/rabbitmq"
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -32,20 +31,20 @@ func NewTaskManager() *TaskManager {
 }
 
 // AddTask добавляет новую задачу
-func (tm *TaskManager) AddTask() string {
+func (tm *TaskManager) AddTask(language, code string) string {
 	taskID := uuid.New().String()
 	tm.Lock()
 	tm.tasks[taskID] = &Task{ID: taskID, Status: "in_progress"}
 	tm.Unlock()
 
-	// обработка
-	go func() {
-		time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second) // случайная задержка от 1 до 5 секунд
+	/// Отправка задачи в RabbitMQ
+	err := rabbitmq.SendTask(taskID, language, code)
+	if err != nil {
 		tm.Lock()
-		tm.tasks[taskID].Status = "ready"
-		tm.tasks[taskID].Result = "Some result data" // Здесь будет результат обработки
+		tm.tasks[taskID].Status = "error"
+		tm.tasks[taskID].Result = err.Error()
 		tm.Unlock()
-	}()
+	}
 
 	return taskID
 }
@@ -70,4 +69,14 @@ func (tm *TaskManager) GetTaskResult(taskID string) (string, bool) {
 		return "", false
 	}
 	return task.Result, true
+}
+
+// Реализация интерфейса TaskUpdater
+func (tm *TaskManager) UpdateTaskStatus(taskID, status, result string) {
+	tm.Lock()
+	defer tm.Unlock()
+	if task, exists := tm.tasks[taskID]; exists {
+		task.Status = status
+		task.Result = result
+	}
 }

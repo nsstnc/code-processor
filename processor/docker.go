@@ -14,14 +14,14 @@ import (
 
 func RunDockerContainer(code string, lang string) (string, error) {
 	var fileExtension string
-	switch lang {
-	case "python":
+	if lang == "python" {
+		code = fmt.Sprintf("import sys\nimport io\nsys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')\n%s", code)
 		fileExtension = ".py"
-	case "cpp":
+	} else if lang == "cpp" {
 		fileExtension = ".cpp"
-	case "c":
+	} else if lang == "c" {
 		fileExtension = ".c"
-	default:
+	} else {
 		return "", fmt.Errorf("unsupported language: %s", lang)
 	}
 
@@ -62,6 +62,7 @@ func RunDockerContainer(code string, lang string) (string, error) {
 	resp, err := cli.ContainerCreate(context.Background(), &container.Config{
 		Image: "temp_code_image",
 		Cmd:   []string{"./run_code.sh", lang, "/usr/src/app/" + fileName},
+		Env:   []string{"LANG=C.UTF-8"},
 	}, nil, nil, nil, "")
 	if err != nil {
 		return "", err

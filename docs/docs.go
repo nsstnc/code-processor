@@ -263,7 +263,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.Task"
+                            "$ref": "#/definitions/http.TaskRequest"
                         }
                     }
                 ],
@@ -300,6 +300,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "http.TaskRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                }
+            }
+        },
         "http.UserRequest": {
             "type": "object",
             "properties": {
@@ -307,21 +318,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "storage.Task": {
-            "description": "Данные задачи",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "result": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }

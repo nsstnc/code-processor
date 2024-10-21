@@ -1,20 +1,26 @@
 package rabbitmq
 
 import (
-	"encoding/json"
-	"log"
-
 	"code-processor/processor"
+	"encoding/json"
+	"fmt"
+	"log"
+	"strings"
 
 	"github.com/streadway/amqp"
 )
 
 type Task struct {
+	ID       string `json:"id"`
 	Language string `json:"language"`
 	Code     string `json:"code"`
 }
 
-func StartConsumer() {
+type TaskUpdater interface {
+	UpdateTaskStatus(taskID string, status string, result string)
+}
+
+func StartConsumer(updater TaskUpdater) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
@@ -60,27 +66,31 @@ func StartConsumer() {
 			log.Printf("Error unmarshalling task: %s", err)
 			continue
 		}
-
+		task.Code = strings.ReplaceAll(task.Code, "\\n", "\n")
+		// Обработка задачи
 		result, err := processor.RunDockerContainer(task.Code, task.Language)
+
+		// Обновление статуса через переданный updater
 		if err != nil {
-			log.Printf("Error running Docker container: %s", err)
-			continue
+			updater.UpdateTaskStatus(task.ID, "error", err.Error())
+		} else {
+			updater.UpdateTaskStatus(task.ID, "ready", result)
 		}
 
-		log.Printf("Execution result: %s", result)
+		log.Printf("Execution result for task %s: %s", task.ID, result)
 	}
 }
 
-func SendTask(language string, code string) {
+func SendTask(taskID string, language string, code string) error {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
+		return fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalf("Failed to open a channel: %s", err)
+		return fmt.Errorf("failed to open a channel: %w", err)
 	}
 	defer ch.Close()
 
@@ -93,17 +103,18 @@ func SendTask(language string, code string) {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("Failed to declare a queue: %s", err)
+		return fmt.Errorf("failed to declare a queue: %w", err)
 	}
 
 	task := Task{
+		ID:       taskID,
 		Language: language,
 		Code:     code,
 	}
 
 	body, err := json.Marshal(task)
 	if err != nil {
-		log.Fatalf("Failed to marshal task: %s", err)
+		return fmt.Errorf("failed to marshal task: %w", err)
 	}
 
 	err = ch.Publish(
@@ -117,8 +128,9 @@ func SendTask(language string, code string) {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Failed to publish a message: %s", err)
+		return fmt.Errorf("failed to publish a message: %w", err)
 	}
 
-	log.Printf("Sent code to RabbitMQ")
+	log.Printf("Sent task %s to RabbitMQ", taskID)
+	return nil
 }

@@ -3,35 +3,23 @@ package main
 import (
 	routes "code-processor/http"
 	rabbitmq "code-processor/rabbitmq"
+	"code-processor/storage"
 	"log"
 	"net/http"
 	"sync"
-	"time"
 )
 
 func main() {
-	language := "cpp"
-	code := `#include <iostream>
-
-		int main() {
-			std::cout << "Hello, World!" << std::endl;
-			return 0;
-		}`
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
-		rabbitmq.StartConsumer()
+		rabbitmq.StartConsumer(storage.TaskManagerInstance)
 	}()
 
 	log.Println("Waiting for consumer to start...")
-	// Добавляем задержку, чтобы потребитель успел подключиться
-	time.Sleep(time.Second)
-
-	// Отправляем задачу
-	rabbitmq.SendTask(language, code)
 
 	// Запускаем HTTP-сервер
 	r := routes.NewRouter()

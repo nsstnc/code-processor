@@ -10,6 +10,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type TaskRequest struct {
+	Language string `json:"language"`
+	Code     string `json:"code"`
+}
+
 // createTaskHandler создаёт новую задачу.
 // @Summary Создание задачи
 // @Description Создаёт новую задачу. Требуется токен аутентификации.
@@ -18,7 +23,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer {auth_token}"
-// @Param task body storage.Task true "Task Info"
+// @Param task body TaskRequest true "Task Info"
 // @Success 201 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
@@ -29,7 +34,19 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskID := storage.TaskManagerInstance.AddTask()
+	var taskReq TaskRequest
+	if err := json.NewDecoder(r.Body).Decode(&taskReq); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	if taskReq.Language == "" || taskReq.Code == "" {
+		http.Error(w, "Language and code must be provided", http.StatusBadRequest)
+		return
+	}
+
+	taskID := storage.TaskManagerInstance.AddTask(taskReq.Language, taskReq.Code)
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(map[string]string{"task_id": taskID})

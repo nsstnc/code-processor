@@ -1,19 +1,16 @@
 definitions:
+  http.TaskRequest:
+    properties:
+      code:
+        type: string
+      language:
+        type: string
+    type: object
   http.UserRequest:
     properties:
       login:
         type: string
       password:
-        type: string
-    type: object
-  storage.Task:
-    description: Данные задачи
-    properties:
-      id:
-        type: string
-      result:
-        type: string
-      status:
         type: string
     type: object
 info:
@@ -175,7 +172,7 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/storage.Task'
+          $ref: '#/definitions/http.TaskRequest'
       produces:
       - application/json
       responses:

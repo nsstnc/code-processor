@@ -21,7 +21,7 @@ type TaskUpdater interface {
 }
 
 func StartConsumer(updater TaskUpdater) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
@@ -82,7 +82,7 @@ func StartConsumer(updater TaskUpdater) {
 }
 
 func SendTask(taskID string, language string, code string) error {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 	if err != nil {
 		return fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}

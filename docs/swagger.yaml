@@ -61,7 +61,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: user_id
           schema:
             additionalProperties:

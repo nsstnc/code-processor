@@ -86,7 +86,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "user_id",
                         "schema": {
                             "type": "object",

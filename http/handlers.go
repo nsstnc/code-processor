@@ -110,7 +110,7 @@ type UserRequest struct {
 // @Accept json
 // @Produce json
 // @Param user body UserRequest true "Данные для регистрации пользователя"
-// @Success 200 {object} map[string]string "user_id"
+// @Success 201 {object} map[string]string "user_id"
 // @Failure 400 {object} map[string]string "error"
 // @Router /register [post]
 func registerUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -144,8 +144,8 @@ func registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		"user_id": userID,
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
-
 }
 
 // loginUserHandler логин пользователя.
@@ -185,7 +185,7 @@ func loginUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]string{
-		"auth_token": authToken,
+		"token": authToken,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

@@ -20,4 +20,14 @@ services:
       - rabbitmq
     privileged: true  
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  test:
+    image: python:3.10  
+    working_dir: /app
+    volumes:
+      - .:/app  
+    depends_on:
+      - code-processor  
+    command: >
+      sh -c "pip install -r tests/requirements.txt && pytest tests/tests.py"

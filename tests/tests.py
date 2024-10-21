@@ -4,7 +4,7 @@ import requests
 import uuid
 import time
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://code-processor:8000"
 
 @pytest.fixture(scope='module')
 def user_data():

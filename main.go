@@ -26,6 +26,8 @@ func main() {
 
 	// Запускаем HTTP-сервер с созданием маршрутов и передачей репозиториев
 	r := routes.NewRouter()
+	r.Handle("/metrics", routes.PrometheusHandler())
+
 	log.Println("Starting server on :8000")
 	log.Fatal(http.ListenAndServe(":8000", r))
 

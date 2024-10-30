@@ -46,6 +46,7 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	useTranslator(taskReq.Code)
 	taskID, _ := storage.StorageInstance.TaskRepository.AddTask(taskReq.Language, taskReq.Code)
 	w.WriteHeader(http.StatusCreated)
 

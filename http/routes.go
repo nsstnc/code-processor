@@ -5,10 +5,20 @@ import (
 	"code-processor/storage"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
+
+func measureRequestDuration(endpoint string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next(w, r)
+		duration := time.Since(start).Seconds()
+		RequestDuration.WithLabelValues(endpoint).Observe(duration)
+	}
+}
 
 // Middleware для проверки авторизации
 func authMiddleware(next http.Handler) http.Handler {
@@ -50,15 +60,15 @@ func NewRouter() *mux.Router {
 
 	// Публичные маршруты
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
-	r.HandleFunc("/register", registerUserHandler).Methods("POST")
-	r.HandleFunc("/login", loginUserHandler).Methods("POST")
+	r.HandleFunc("/register", measureRequestDuration("register", registerUserHandler)).Methods("POST")
+	r.HandleFunc("/login", measureRequestDuration("login", loginUserHandler)).Methods("POST")
 
 	// Защищённые маршруты
 	protectedRoutes := r.PathPrefix("/").Subrouter()
 	protectedRoutes.Use(authMiddleware)
-	protectedRoutes.HandleFunc("/task", createTaskHandler).Methods("POST")
-	protectedRoutes.HandleFunc("/status/{task_id}", getTaskStatusHandler).Methods("GET")
-	protectedRoutes.HandleFunc("/result/{task_id}", getTaskResultHandler).Methods("GET")
+	protectedRoutes.HandleFunc("/task", measureRequestDuration("create_task", createTaskHandler)).Methods("POST")
+	protectedRoutes.HandleFunc("/status/{task_id}", measureRequestDuration("get_task_status", getTaskStatusHandler)).Methods("GET")
+	protectedRoutes.HandleFunc("/result/{task_id}", measureRequestDuration("get_task_result", getTaskResultHandler)).Methods("GET")
 
 	return r
 }

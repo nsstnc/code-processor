@@ -1,6 +1,10 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
   rabbitmq:
     image: rabbitmq:management
     ports:
@@ -18,10 +22,21 @@ services:
       - "8000:8000"
     depends_on:
       - rabbitmq
+      - db
     privileged: true  
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
+  db:
+    image: postgres:13.0
+    environment:
+      POSTGRES_DB: code-processor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: volume
+        target: /var/lib/postgresql/dataConfig
   test:
     image: python:3.10  
     working_dir: /app

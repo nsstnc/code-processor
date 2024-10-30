@@ -17,7 +17,7 @@ type Task struct {
 }
 
 type TaskUpdater interface {
-	UpdateTaskStatus(taskID string, status string, result string)
+	UpdateTaskStatus(taskID string, status string, result string) error
 }
 
 func StartConsumer(updater TaskUpdater) {

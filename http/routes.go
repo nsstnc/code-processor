@@ -30,7 +30,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		token := tokenParts[1]
 
 		// Проверяем токен
-		userID, valid := storage.UserManagerInstance.GetUserByToken(token)
+		userID, valid := storage.StorageInstance.SessionRepository.GetUserByToken(token)
 		if !valid {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

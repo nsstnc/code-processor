@@ -46,7 +46,7 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskID := storage.TaskManagerInstance.AddTask(taskReq.Language, taskReq.Code)
+	taskID, _ := storage.StorageInstance.TaskRepository.AddTask(taskReq.Language, taskReq.Code)
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(map[string]string{"task_id": taskID})
@@ -67,7 +67,7 @@ func createTaskHandler(w http.ResponseWriter, r *http.Request) {
 func getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	taskID := vars["task_id"]
-	status, exists := storage.TaskManagerInstance.GetTaskStatus(taskID)
+	status, exists := storage.StorageInstance.TaskRepository.GetTaskStatus(taskID)
 	if !exists {
 		http.Error(w, "Task not found", http.StatusNotFound)
 		return
@@ -90,7 +90,7 @@ func getTaskStatusHandler(w http.ResponseWriter, r *http.Request) {
 func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	taskID := vars["task_id"]
-	result, exists := storage.TaskManagerInstance.GetTaskResult(taskID)
+	result, exists := storage.StorageInstance.TaskRepository.GetTaskResult(taskID)
 	if !exists {
 		http.Error(w, "Task not found or not ready", http.StatusNotFound)
 		return
@@ -134,7 +134,7 @@ func registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := storage.UserManagerInstance.AddUser(req.Login, req.Password)
+	userID, _ := storage.StorageInstance.UserRepository.AddUser(req.Login, req.Password)
 
 	if userID == "" {
 		http.Error(w, "Cannot register user", http.StatusBadRequest)
@@ -178,9 +178,15 @@ func loginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authToken := storage.UserManagerInstance.ValidateUser(req.Login, req.Password)
-	if authToken == "" {
+	userID, _ := storage.StorageInstance.UserRepository.ValidateUser(req.Login, req.Password)
+	if userID == "" {
 		http.Error(w, "Invalid login or password", http.StatusUnauthorized)
+		return
+	}
+
+	authToken, _ := storage.StorageInstance.SessionRepository.AddSession(userID)
+	if authToken == "" {
+		http.Error(w, "Error with creating session", http.StatusUnauthorized)
 		return
 	}
 
